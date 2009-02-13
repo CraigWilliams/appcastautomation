@@ -145,6 +145,7 @@ class AppCast
   require 'fileutils'
   
   MESSAGE_HEADER    = 'RUN SCRIPT DURING BUILD MESSAGE'
+  APPCAST_XML_LINK  = 'http://you.com/app/appcast.xml'
   
   def initialize
     @signature = ''
@@ -299,8 +300,8 @@ class AppCast
 "<?xml version=\"1.0\" encoding=\"utf-8\"?>
     <rss version=\"2.0\" xmlns:sparkle=\"http://www.andymatuschak.org/xml-namespaces/sparkle\"  xmlns:dc=\"http://purl.org/dc/elements/1.1/\">
        <channel>
-          <title>Your Great App's Changelog</title>
-          <link>http://you.com/app/appcast.xml</link>
+          <title>#{@proj_name}'s Changelog</title>
+          <link>#{APPCAST_XML_LINK}</link>
           <description>Most recent changes with links to updates.</description>
           <language>en</language>
 
