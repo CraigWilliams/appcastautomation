@@ -1,6 +1,5 @@
 #!/usr/bin/env ruby -w
 
-# new line
 #################################################################################
 #                                                                               #
 #     appcast_automation.rb                                                     #
@@ -125,20 +124,9 @@
     and you are finished!
 
     If you have questions, ideas or bug reports please post them at:
-    http://allancraig.net/blog/?p=65
+    http://allancraig.net/index.php?option=com_content&view=article&id=133:appcast-automation-in-xcode&catid=46:xcode&Itemid=97
       
 =end
-
-
-# This will sort the files correctly just like they appear in the Finder
-# Copied from: http://www.bofh.org.uk/articles/2007/12/16/comprehensible-sorting-in-ruby
-# author: Piers Cawley
-module Enumerable
-  def sensible_sort
-    sort_by {|k| k.to_s.split(/((?:(?:^|\s)[-+])?(?:\.\d+|\d+(?:\.\d+?(?:[eE]\d+)?(?:$|(?![eE\.])))?))/ms).map {|v| Float(v) rescue v.downcase}}
-  end
-end
-
 
 class AppCast
   require 'yaml'
@@ -146,7 +134,6 @@ class AppCast
   require 'fileutils'
   
   MESSAGE_HEADER    = 'RUN SCRIPT DURING BUILD MESSAGE'
-  APPCAST_XML_LINK  = 'http://you.com/app/appcast.xml'
   
   def initialize
     @signature = ''
@@ -199,28 +186,28 @@ class AppCast
   def instantiate_project_variables
     @proj_dir               = ENV['BUILT_PRODUCTS_DIR']
     @proj_name              = ENV['PROJECT_NAME']
-    @version                = `defaults read "#{@proj_dir}/#{@proj_name}.app/Contents/Info" CFBundleVersion`.chomp
-    @archive_filename       = "#{@proj_name} #{@version.chomp}.zip"
+    @version                = `defaults read "#{@proj_dir}/#{@proj_name}.app/Contents/Info" CFBundleShortVersionString`
+    @build_number			      = `defaults read "#{@proj_dir}/#{@proj_name}.app/Contents/Info" CFBundleVersion`
+    @archive_filename       = "#{@proj_name}_#{@version.chomp}.zip" # underline character added
     @archive_path           = "#{@proj_dir}/#{@archive_filename}"
   end
 
   def instantiate_appcast_variables
     @appcast_xml_name       = @config['appcast_xml_name'].chomp
     @appcast_basefolder     = @config['appcast_basefolder'].chomp
-    @appcast_xml_folder     = "#{@appcast_basefolder}/_appcasts"
-    @appcast_proj_folder    = "#{@appcast_basefolder}/#{@proj_name}_#{@version}"
+    @appcast_proj_folder    = "#{@config['appcast_basefolder']}/#{@proj_name}_#{@version}".chomp
     @appcast_xml_path       = "#{@appcast_proj_folder}/#{@appcast_xml_name}"
     @download_base_url      = @config['download_base_url']
     @keychain_privkey_name  = @config['keychain_privkey_name']
     @css_file_name          = @config['css_file_name']
-    @releasenotes_url       = "#{@download_base_url}#{@version}.html"
+    @releasenotes_url       = "#{@download_base_url}#{@version.chomp}.html"
     @download_url           = "#{@download_base_url}#{@archive_filename}"
   end
 
   def remove_old_zip_create_new_zip
     Dir.chdir(@proj_dir)
     `rm -f #{@proj_name}*.zip`
-    `zip -qr "#{@archive_filename}" "#{@proj_name}.app"`
+    `ditto -c -k --keepParent -rsrc "#{@proj_name}.app" "#{@archive_filename}"`
   end
   
   def copy_archive_to_appcast_path
@@ -254,28 +241,14 @@ class AppCast
 
     `rm -fP #{priv_key_path}`
 
-    log_message("New signature is #{@signature}")
+    log_message(@signature)
 
     if @signature == ''
       log_message("Unable to sign file #{@archive_filename}")
       exit
     end
   end
-
-  # There will be a folder in the appcast build called '_appcasts'
-  # This will contain a copy of each builds appcast_VERSION.xml file
-  # They will be sorted then reversed to show the latest version first
-  # This final file will be placed in this builds appcast folder.  
-  def create_complete_appcast_xml
-    items = "\n"
-    files = Dir.entries(dir) 
-    files.sensible_sort.reverse.each do |file|
-      next if file =~ /^\./
-      items << IO.read("#{dir}/#{file}") + "\n"
-    end
-  end
   
-  # This creates this builds appcast item entry
   def create_appcast_xml
     appcast_xml = 
 "<item>
@@ -287,6 +260,7 @@ class AppCast
 	<enclosure
 		url=\"#{@download_url.chomp}\"
 		sparkle:version=\"#{@version.chomp}\"
+		sparkle:shortVersionString=\"#{@build_number.chomp}\"
 		type=\"application/octet-stream\"
 		length=\"#{@size}\"
 		sparkle:dsaSignature=\"#{@signature.chomp}\"
@@ -294,22 +268,6 @@ class AppCast
 </item>"
 
     File.open(@appcast_xml_path, 'w') { |f| f.puts appcast_xml }
-  end
-  
-  def complete_appcast_xml_shell
-    return = 
-"<?xml version=\"1.0\" encoding=\"utf-8\"?>
-    <rss version=\"2.0\" xmlns:sparkle=\"http://www.andymatuschak.org/xml-namespaces/sparkle\"  xmlns:dc=\"http://purl.org/dc/elements/1.1/\">
-       <channel>
-          <title>#{@proj_name}'s Changelog</title>
-          <link>#{APPCAST_XML_LINK}</link>
-          <description>Most recent changes with links to updates.</description>
-          <language>en</language>
-
-            #{items}
-
-   </channel>
-</rss>"
   end
   
   # Creates the appcast folder if it does not exist
