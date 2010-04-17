@@ -1,3 +1,3 @@
-2010-04-17 Change
-	Using ditto instead of zip as suggested by Andreas Hegenberg and Stefan Klieme
-	@build_number added by Stefan Klieme
+2010-04-17 Changes made by Stefan Klieme - Thanks Stefan!
+	Using ditto instead of zip
+	Added @build_number
