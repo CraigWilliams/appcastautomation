@@ -83,7 +83,7 @@ class AppCast
     @proj_dir               = ENV['BUILT_PRODUCTS_DIR']
     @proj_name              = ENV['PROJECT_NAME']
     @version                = `defaults read "#{@proj_dir}/#{@proj_name}.app/Contents/Info" CFBundleShortVersionString`
-    @build_number			      = `defaults read "#{@proj_dir}/#{@proj_name}.app/Contents/Info" CFBundleVersion`
+    @build_number			= `defaults read "#{@proj_dir}/#{@proj_name}.app/Contents/Info" CFBundleVersion`
     @archive_filename       = "#{@proj_name}_#{@version.chomp}.zip" # underline character added
     @archive_path           = "#{@proj_dir}/#{@archive_filename}"
   end
@@ -98,6 +98,7 @@ class AppCast
     @css_file_name          = @config['css_file_name']
     @releasenotes_url       = "#{@download_base_url}#{@version.chomp}.html"
     @download_url           = "#{@download_base_url}#{@archive_filename}"
+    @appcast_download_url	= "#{@download_base_url}#{@appcast_xml_name}"
   end
 
   def remove_old_zip_create_new_zip
@@ -147,21 +148,28 @@ class AppCast
   
   def create_appcast_xml
     appcast_xml = 
-"<item>
-	<title>Version #{@version.chomp}</title>
-	  <sparkle:releaseNotesLink>
-	    #{@releasenotes_url.chomp}
-	  </sparkle:releaseNotesLink>
-	<pubDate>#{@pubdate.chomp}</pubDate>
-	<enclosure
-		url=\"#{@download_url.chomp}\"
-		sparkle:version=\"#{@version.chomp}\"
-		sparkle:shortVersionString=\"#{@build_number.chomp}\"
-		type=\"application/octet-stream\"
-		length=\"#{@size}\"
-		sparkle:dsaSignature=\"#{@signature.chomp}\"
-	/>
-</item>"
+"<?xml version=\"1.0\" encoding=\"utf-8\"?>
+<rss version=\"2.0\" xmlns:sparkle=\"http://www.andymatuschak.org/xml-namespaces/sparkle\"  xmlns:dc=\"http://purl.org/dc/elements/1.1/\">
+   <channel>
+      <title>#{@proj_name}_#{@version.chomp}</title>
+      <link>#{@appcast_download_url}</link>
+	 <description>Most recent changes with links to updates.</description>
+      <language>en</language>
+         <item>
+            <title>Version #{@version.chomp}</title>
+			<sparkle:releaseNotesLink>
+					#{@releasenotes_url}
+				</sparkle:releaseNotesLink>
+            <pubDate>#{@pubdate.chomp}</pubDate>
+            <enclosure url=\"#{@download_url.chomp}\" 
+                    length=\"#{@size}\" 
+                    type=\"application/octet-stream\" 
+                    sparkle:version=\"#{@build_number.chomp}\"
+                    sparkle:shortVersionString=\"#{@version.chomp}\"
+                    sparkle:dsaSignature=\"#{@signature.chomp}\"/>
+         </item>
+   </channel>
+</rss>"
 
     File.open(@appcast_xml_path, 'w') { |f| f.puts appcast_xml }
   end
@@ -211,27 +219,16 @@ class AppCast
     			<table class=\"dots\" width=\"100%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\" summary=\"Two column table with heading\">
     				<tr>
     					<td class=\"blue\" colspan=\"2\">
-    						<h3>TITLE</h3>
+    						<h3>#{@proj_name} #{@version.chomp} Release Notes</h3>
     					</td>
     				</tr>
     				<tr>
-    					<td valign=\"top\" width=\"150\"><img src=\"IMAGE_NAME.png\" alt=\"ALT_TITLE\"  width=\"150\" border=\"0\"></td>
     					<td valign=\"top\">
-    						<p>DESCRIPTION</p>
-    					</td>
-    				</tr>
-    			</table>
-    			<br>
-    			<table class=\"dots\" width=\"100%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\" summary=\"Two column table with heading\">
-    				<tr>
-    					<td class=\"blue\" colspan=\"2\">
-    						<h3>TITLE</h3>
-    					</td>
-    				</tr>
-    				<tr>
-    					<td valign=\"top\" width=\"150\"><img src=\"IMAGE_NAME.png\" alt=\"ALT_TITLE\"  width=\"150\" border=\"0\"></td>
-    					<td valign=\"top\">
-    						<p>DESCRIPTION</p>
+    						<p>
+    						<ul>
+    						<li>DESCRIPTION</li>
+    						</ul>
+    						</p>
     					</td>
     				</tr>
     			</table>
