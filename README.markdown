@@ -1,5 +1,5 @@
 ## INTRO:
-This script is expanding on Marc Liyanage’s excellent post [Sparkle Appcast Automation in Xcode.](http://www.entropy.ch/blog/Developer/2008/09/22/Sparkle-Appcast-Automation-in-Xcode.html "Sparkle Appcast Automation in Xcode")  
+This script is expanding on Marc Liyanage’s excellent post [Sparkle Appcast Automation in Xcode.][app_cast]   
 Very cool!
 
 In his article, Marc uses a bash script to automate the process of signing your 
@@ -7,7 +7,7 @@ Sparkle enabled app and explains how to put your private and public keys in your
 keychain. I wrote a Ruby version that extends this functionality to 
 include a few more options…
 
->IMPORTANT: You will need to read Marc's article first before moving forward. 
+**IMPORTANT**: You will need to read Marc's [article][app_cast] first before moving forward. 
 
 Here is a quick list of added features:
 
@@ -25,86 +25,90 @@ The project release folder is not the 'Release' folder Xcode creates.
 This is a folder that contains this and future Sparkle release builds. 
 See 'appcast_basefolder' below.
  
-INSTRUCTIONS:    
+## INSTRUCTIONS:    
 
-Config YAML file
-A YAML file is easily editable and is a good place for us to set up our 
-configuration information. It also enables us not to have to change the 
-script once we have it the way we want it. 
+Config YAML file  
+A YAML file is easily editable and is a good place for us to set up our   
+configuration information. It also enables us not to have to change the   
+script once we have it the way we want it.   
 
-Create a 'config.yaml' file and place it in your projects 'Release' folder
-and include the following making the necessary changes.
----
-build_now:              'YES'
-download_base_url:      'http://www.your_website.com/app_folder/'
-appcast_basefolder:     '/users/user_name/desktop/app_name/'
-appcast_xml_name:       'appcast.xml'
-keychain_privkey_name:  'Sparkle Private Key'
-css_file_name:          'rnotes.css'
+Create a 'config.yaml' file and place it in your projects 'Release' folder  
+and include the following making the necessary changes.  
 
-IMPORTANT: If you change the variable names here you also 
-need to change them in the script.
+	---
+	build_now:              'YES'  
+	download_base_url:      'http://www.your_website.com/app_folder/'  
+	appcast_basefolder:     '/users/user_name/desktop/app_name/'  
+	appcast_xml_name:       'appcast.xml'  
+	keychain_privkey_name:  'Sparkle Private Key'  
+	css_file_name:          'rnotes.css'  
 
-VARIABLE EXPLANATION
+*IMPORTANT: If you change the variable names here you also 
+need to change them in the script.*
 
-build_now: 
-  Will only include this script in the build process if this is set to 'YES'
-  The script automatically checks that the build style is 'Release'
+## VARIABLE EXPLANATION
 
-download_base_url:      
-  Your website url where you will place your updated project
+	build_now: 
+	  Will only include this script in the build process if this is set to 'YES'
+	  The script automatically checks that the build style is 'Release'
 
-appcast_basefolder:   
-  The base file is created for you and a project folder inside that with
-  the name of your project and version number. 
-	eg  - ProjectName 
-  		  - ProjectName 1.0
-			    - appcast.xml (contains the '<item>' info)
-			    - 1.0.html
-			    - rnotes.css
-  			  - ProjectName 1.0.zip
-  		  - ProjectName 1.1
-  			  - appcast.xml (contains the '<item>' info)
-  			  - 1.1.html
-  			  - rnotes.css
-  			  - ProjectName 1.1.zip
+	download_base_url:      
+	  Your website url where you will place your updated project
 
-
-The following files are created for you if they do not already exist.
-    appcast_xml_name:
-    css_file_name:
-    version_number.html
-
-Your archived project file is also copied to the project folder
-    AppName 1.1.zip
-
-appcast_xml_name:
-  This file holds the results of the script. What is between the '' tags that
-  you will copy into your complete appcast.xml file.
-  Name to your liking.
-
-keychain_privkey_name:
-  You should understand this after reading Marc's article.
-  Name to your liking.
-
-css_file_name:
-This name will be used to create your css file and the link in the xml file. 
-If you change this after these are created make sure also change the xml file 
-or if you created the css file first use that name here.
-
-  The css is at the bottom of the script and is in 'flat' form. One liners.
-  When written to file it is expanded to standard format for easy editing.
-
-Once your config.yaml file is created and placed in your projects 'Release' folder, 
-add this script as a 'Run Script' build phase. Set the bash to /usr/bin/ruby 
-and you are finished!
-
-If you have questions, ideas or bug reports please post them at:
-http://allancraig.net/index.php?option=com_content&view=article&id=133:appcast-automation-in-xcode&catid=46:xcode&Itemid=97
+	appcast_basefolder:   
+	  The base file is created for you and a project folder inside that with
+	  the name of your project and version number. 
+		eg  - ProjectName 
+	  		  - ProjectName 1.0
+				    - appcast.xml (contains the '<item>' info)
+				    - 1.0.html
+				    - rnotes.css
+	  			  - ProjectName 1.0.zip
+	  		  - ProjectName 1.1
+	  			  - appcast.xml (contains the '<item>' info)
+	  			  - 1.1.html
+	  			  - rnotes.css
+	  			  - ProjectName 1.1.zip
 
 
-# CHANGE LOG
+	The following files are created for you if they do not already exist.
+	    appcast_xml_name:
+	    css_file_name:
+	    version_number.html
 
-2010-04-17 Changes made by Stefan Klieme - Thanks Stefan!
-	Using ditto instead of zip
+	Your archived project file is also copied to the project folder
+	    AppName 1.1.zip
+
+	appcast_xml_name:
+	  This file holds the results of the script. What is between the '' tags that
+	  you will copy into your complete appcast.xml file.
+	  Name to your liking.
+
+	keychain_privkey_name:
+	  You should understand this after reading Marc's article.
+	  Name to your liking.
+
+	css_file_name:
+	This name will be used to create your css file and the link in the xml file. 
+	If you change this after these are created make sure also change the xml file 
+	or if you created the css file first use that name here.
+
+	  The css is at the bottom of the script and is in 'flat' form. One liners.
+	  When written to file it is expanded to standard format for easy editing.
+
+Once your config.yaml file is created and placed in your projects 'Release' folder,   
+add this script as a 'Run Script' build phase. Set the bash to /usr/bin/ruby   
+and you are finished!  
+
+If you have questions, ideas or bug reports please post them [here](http://allancraig.net/index.php?option=com_content&view=article&id=133:appcast-automation-in-xcode&catid=46:xcode&Itemid=97)
+
+
+## CHANGE LOG
+
+2010-04-17 Changes made by Stefan Klieme - Thanks Stefan!  
+	Using ditto instead of zip  
 	Added @build_number
+	
+	
+	
+[app_cast]: http://www.entropy.ch/blog/Developer/2008/09/22/Sparkle-Appcast-Automation-in-Xcode.html "Sparkle Appcast Automation in Xcode"
