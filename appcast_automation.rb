@@ -125,7 +125,7 @@ class AppCast
     
     key = `security find-generic-password -g -s "#{@keychain_privkey_name}" 2>&1 1>/dev/null | perl -pe '($_) = /"(.+)"/'`
     
-    if key == ''
+    if key.empty?
       log_message("Unable to load signing private key with name '#{@keychain_privkey_name}' from keychain\nFor file #{@archive_filename}")
       exit
     end
@@ -140,7 +140,7 @@ class AppCast
 
     log_message(@signature)
 
-    if @signature == ''
+    if @signature.empty?
       log_message("Unable to sign file #{@archive_filename}")
       exit
     end
