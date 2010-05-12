@@ -1,5 +1,5 @@
 ## TWO VERSIONS
-**Master branch** is for OS versions before Snow Leopard
+**Master branch** is for OS versions before Snow Leopard    
 **SnowLeopard branch** is for Snow Leopard. All future revisions will be done on this branch.
 
 ## INTRO: ##
