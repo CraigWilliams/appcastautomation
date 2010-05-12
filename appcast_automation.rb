@@ -234,7 +234,7 @@ class AppCast
       <td valign=\"top\">
         <p>
         <ul>
-        <li>DESCRIPTION</li>
+          <li>DESCRIPTION</li>
         </ul>
         </p>
       </td>
