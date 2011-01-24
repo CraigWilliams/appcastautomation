@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby -w
-
+#
 #################################################################################
 #                                                                               #
 #     appcast_automation.rb                                                     #
@@ -34,6 +34,7 @@ class AppCast
   require 'base64'
 
   MESSAGE_HEADER    = 'RUN SCRIPT DURING BUILD MESSAGE'
+  YAML_FOLDER_PATH    = "#{ENV['HOME']}/Documents/Projects/_project_yaml/MVimLookup/"
 
   def initialize
     @signature = ''
@@ -68,7 +69,7 @@ class AppCast
 
   # Exits if no config.yaml file found.
   def load_config_file
-    config_file_path = "#{@proj_dir}/config.yaml"
+    config_file_path = "#{YAML_FOLDER_PATH}/config.yml"
     if !File.exists?(config_file_path)
       log_message("No 'config.yaml' file found in project directory.")
       exit
@@ -145,12 +146,13 @@ class AppCast
     dss1 = OpenSSL::Digest::DSS1.new
     sign = dsa.sign(dss1, hashed)
     @signature = Base64.encode64(sign)
+    @signature = @signature.gsub("\n", '')
 
     if @signature.empty?
       log_message("Unable to sign file #{@archive_filename}")
       exit
     else
-      log_message("New signature is #{@signature}")
+      log_message("New signature is \n#{@signature}")
     end
   end
 
