@@ -34,7 +34,7 @@ class AppCast
   require 'base64'
 
   MESSAGE_HEADER    = 'RUN SCRIPT DURING BUILD MESSAGE'
-  YAML_FOLDER_PATH    = "#{ENV['HOME']}/Documents/Projects/_project_yaml/MVimLookup/"
+  YAML_FOLDER_PATH    = "#{ENV['HOME']}/Documents/Projects/_project_yaml/#{ENV['PROJECT_NAME']}/"
 
   def initialize
     @signature = ''
@@ -124,7 +124,7 @@ class AppCast
     @size     = File.size(@archive_filename)
     @pubdate  = `date +"%a, %d %b %G %T %z"`
   end
-  
+
   def get_key
     key_xml = `security find-generic-password -g -s "#{@keychain_privkey_name}" 2>&1 1>/dev/null`
     xml = key_xml.gsub(/\\012/, "\n")
