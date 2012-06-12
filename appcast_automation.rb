@@ -80,7 +80,7 @@ class AppCast
 
   def exit_unless_build 
     unless @config['build_now'] == 'YES'
-      log_message("The 'build_now' setting in 'config.yaml' set to 'NO'\nIf you are wanting to include this script in\nthe build process change this setting to 'YES'")
+      log_message("The 'build_now' setting in 'config.yml' set to 'NO'\nIf you are wanting to include this script in\nthe build process change this setting to 'YES'")
       exit
     end
   end
@@ -193,7 +193,7 @@ class AppCast
   # or is accidently moved or deleted
   # Creates an html file with generic note template if it does not exist
   # This way the notes file is named correctly as well
-  # Creates a css file named from yaml file with default css
+  # Creates a css file named from yml file with default css
   def create_appcast_folder_and_files
     base_folder = @appcast_basefolder
     project_folder = @appcast_proj_folder
