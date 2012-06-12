@@ -16,7 +16,7 @@ include a few more options…
 
 Here is a quick list of added features:
 
-	1. config.yaml file for configuration information
+	1. config.yml file for configuration information
 	2. build_now option - when set to 'NO' will not run during Release style build
 	3. Creates project release folder if it does not exist
 	4. Creates sub-folders based on version number
@@ -37,8 +37,10 @@ A YAML file is easily editable and is a good place for us to set up our
 configuration information. It also enables us not to have to change the   
 script once we have it the way we want it.   
 
-Create a 'config.yaml' file and place it in your projects 'Release' folder  
-and include the following making the necessary changes.  
+Create a 'config.yml' file and place it where you wish.
+Set the following variable to the location of the config.yml file.
+
+  YAML_FOLDER_PATH = "/path/to/config.yml"
 
 	---
 	build_now:              'YES'  
@@ -101,7 +103,7 @@ need to change them in the script.*
 	  The css is at the bottom of the script and is in 'flat' form. One liners.
 	  When written to file it is expanded to standard format for easy editing.
 
-Once your config.yaml file is created and placed in your projects 'Release' folder,   
+Once your config.yml file is created and placed in your projects 'Release' folder,   
 add this script as a 'Run Script' build phase. Set the bash to /usr/bin/ruby   
 and you are finished!  
 

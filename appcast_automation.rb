@@ -33,23 +33,24 @@ class AppCast
   require 'nokogiri'
   require 'base64'
 
-  MESSAGE_HEADER    = 'RUN SCRIPT DURING BUILD MESSAGE'
-  YAML_FOLDER_PATH    = "#{ENV['HOME']}/Documents/Projects/_project_yaml/#{ENV['PROJECT_NAME']}/"
+  MESSAGE_HEADER   = 'RUN SCRIPT DURING BUILD MESSAGE'
+  YAML_FOLDER_PATH = "#{ENV['HOME']}/Documents/Projects/_project_yaml/#{ENV['PROJECT_NAME']}/"
 
   def initialize
     @signature = ''
     require_release_build
-    instantiate_project_variables
-    load_config_file
+    project_setup
+    load_config
 
-    # the build_now setting in the config.yaml file
+    # the build_now setting in the config.yml file
     # determines whether you want to perform this script
     # set to 'NO' until you are ready to publish
-    exit_if_build_not_set_to_yes
-    instantiate_appcast_variables
+    exit_unless_build
+    base_folder
+    appcast_setup
   end
 
-  def main_worker_bee
+  def execute!
     create_appcast_folder_and_files
     remove_old_zip_create_new_zip
     file_stats
@@ -67,43 +68,47 @@ class AppCast
     end
   end
 
-  # Exits if no config.yaml file found.
-  def load_config_file
+  # Exits if no config.yml file found.
+  def load_config
     config_file_path = "#{YAML_FOLDER_PATH}/config.yml"
-    if !File.exists?(config_file_path)
-      log_message("No 'config.yaml' file found in project directory.")
+    unless File.exists?(config_file_path)
+      log_message("No 'config.yml' file found in project directory.")
       exit
     end
     @config = YAML.load_file(config_file_path)
   end
 
-  def exit_if_build_not_set_to_yes
-    if @config['build_now'] != 'YES'
+  def exit_unless_build 
+    unless @config['build_now'] == 'YES'
       log_message("The 'build_now' setting in 'config.yaml' set to 'NO'\nIf you are wanting to include this script in\nthe build process change this setting to 'YES'")
       exit
     end
   end
 
-  def instantiate_project_variables
-    @proj_dir               = ENV['BUILT_PRODUCTS_DIR']
-    @proj_name              = ENV['PROJECT_NAME']
-    @version                = `defaults read "#{@proj_dir}/#{@proj_name}.app/Contents/Info" CFBundleShortVersionString`
-    @build_number			= `defaults read "#{@proj_dir}/#{@proj_name}.app/Contents/Info" CFBundleVersion`
-    @archive_filename       = "#{@proj_name}_#{@version.chomp}.zip" # underline character added
-    @archive_path           = "#{@proj_dir}/#{@archive_filename}"
+  def project_setup
+    @proj_dir         = ENV['BUILT_PRODUCTS_DIR']
+    @proj_name        = ENV['PROJECT_NAME']
+    @version          = `defaults read "#{@proj_dir}/#{@proj_name}.app/Contents/Info" CFBundleShortVersionString`
+    @build_number     = `defaults read "#{@proj_dir}/#{@proj_name}.app/Contents/Info" CFBundleVersion`
+    @archive_filename = "#{@proj_name}_#{@version.chomp}.zip" # underline character added
+    @archive_path     = "#{@proj_dir}/#{@archive_filename}"
   end
 
-  def instantiate_appcast_variables
-    @appcast_xml_name       = @config['appcast_xml_name'].chomp
-    @appcast_basefolder     = @config['appcast_basefolder'].chomp
-    @appcast_proj_folder    = "#{@config['appcast_basefolder']}/#{@proj_name}_#{@version}".chomp
-    @appcast_xml_path       = "#{@appcast_proj_folder}/#{@appcast_xml_name}"
-    @download_base_url      = @config['download_base_url']
-    @keychain_privkey_name  = @config['keychain_privkey_name']
-    @css_file_name          = @config['css_file_name']
-    @releasenotes_url       = "#{@download_base_url}#{@version.chomp}.html"
-    @download_url           = "#{@download_base_url}#{@archive_filename}"
-    @appcast_download_url	= "#{@download_base_url}#{@appcast_xml_name}"
+  def appcast_setup
+    @appcast_xml_name      = @config['appcast_xml_name'].chomp
+    @appcast_proj_folder   = "#{@config['appcast_basefolder']}/#{@proj_name}_#{@version}".chomp
+    @appcast_xml_path      = "#{@appcast_proj_folder}/#{@appcast_xml_name}"
+    @download_base_url     = @config['download_base_url']
+    @keychain_privkey_name = @config['keychain_privkey_name']
+    @css_file_name         = @config['css_file_name']
+    @releasenotes_url      = "#{@download_base_url}#{@version.chomp}.html"
+    @download_url          = "#{@download_base_url}#{@archive_filename}"
+    @appcast_download_url  = "#{@download_base_url}#{@appcast_xml_name}"
+  end
+
+  def base_folder
+    @appcast_basefolder = @config['appcast_basefolder'].chomp
+    File.expand_path(@appcast_basefolder) if @appcast_basefolder.start_with?("~")
   end
 
   def remove_old_zip_create_new_zip
@@ -141,10 +146,10 @@ class AppCast
       exit
     end
 
-    hashed = OpenSSL::Digest::SHA1.digest(File.read("#{@archive_path}"))
-    dsa = OpenSSL::PKey::DSA.new(key)
-    dss1 = OpenSSL::Digest::DSS1.new
-    sign = dsa.sign(dss1, hashed)
+    hashed     = OpenSSL::Digest::SHA1.digest(File.read("#{@archive_path}"))
+    dsa        = OpenSSL::PKey::DSA.new(key)
+    dss1       = OpenSSL::Digest::DSS1.new
+    sign       = dsa.sign(dss1, hashed)
     @signature = Base64.encode64(sign)
     @signature = @signature.gsub("\n", '')
 
@@ -196,8 +201,8 @@ class AppCast
     notes_file = "#{project_folder}/#{File.basename(@releasenotes_url.chomp)}"
     css_file_path = "#{project_folder}/#{@css_file_name}"
 
-    Dir.mkdir(base_folder)    if !File.exists?(base_folder)
-    Dir.mkdir(project_folder) if !File.exists?(project_folder)
+    Dir.mkdir(base_folder)    unless File.exists?(base_folder)
+    Dir.mkdir(project_folder) unless File.exists?(project_folder)
 
     File.open(notes_file, 'w') { |f| f.puts release_notes_generic_text } unless File.exists?(notes_file)
     File.open(css_file_path, 'w') { |f| f.puts decompressed_css } unless File.exists?(css_file_path)
@@ -290,7 +295,7 @@ code { color: black; font-size: 9pt; font-family: Verdana, Courier, sans-serif; 
 end
 
 if __FILE__ == $0
-  newAppcast = AppCast.new
-  newAppcast.main_worker_bee
+  appcast = AppCast.new
+  appcast.execute!
   newAppcast.log_message("It appears all went well with the build script!")
 end
