@@ -297,5 +297,5 @@ end
 if __FILE__ == $0
   appcast = AppCast.new
   appcast.execute!
-  newAppcast.log_message("It appears all went well with the build script!")
+  appcast.log_message("It appears all went well with the build script!")
 end
